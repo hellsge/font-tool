@@ -1,0 +1,18 @@
+{
+    "files.associations": {
+        "nanosvgrast.h": "c",
+        "cstdlib": "c",
+        "stb_truetype.h": "c",
+        "initializer_list": "c",
+        "type_traits": "c",
+        "stdlib.h": "c",
+        "stdio.h": "c",
+        "math.h": "c",
+        "xhash": "c",
+        "xutility": "c",
+        "algorithm": "c",
+        "graphics.h": "c",
+        "easyx.h": "c"
+    },
+    "C_Cpp.errorSquiggles": "disabled"
+}
