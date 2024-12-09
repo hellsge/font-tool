@@ -38,6 +38,7 @@ typedef struct {
     short sy0;
     short sx1;
     short sy1;
+    short advance;
     uint8_t winding_count;
     uint8_t *winding_lengths;
     short *windings;
@@ -277,6 +278,12 @@ int generateBinFile(const char *ttfPath, const char *binPath, const char *text, 
         fwrite(&sx1, sizeof(short), 1, binFile);
         fwrite(&sy1, sizeof(short), 1, binFile);
 
+        int advance, lsb;
+        stbtt_GetGlyphHMetrics(&font, glyphIndex, &advance, &lsb);
+
+        short sadvancd = (short)advance;
+        fwrite(&sadvancd, sizeof(short), 1, binFile);
+
         stbtt_vertex *stbVertex = NULL;
         int verCount = stbtt_GetGlyphShape(&font, glyphIndex, &stbVertex);
         int winding_count = 0;
@@ -442,7 +449,17 @@ void readBinFile(const char *binPath) {
             return;
         }
 
-        printf("Character: 0x%04X, x0: %d, y0: %d, x1: %d, y1: %d\n", glyphEntries[0].unicode, x0, y0, x1, y1);
+        short advance;
+        if (fread(&advance, sizeof(short), 1, binFile) != 1) {
+            fprintf(stderr, "Error reading glyph advance!\n");
+            free(glyphEntries);
+            free(fontSet.fontName);
+            fclose(binFile);
+            return;
+        }
+
+    printf("Character: 0x%04X, x0: %d, y0: %d, x1: %d, y1: %d, advance: %d\n",
+           glyphEntries[0].unicode, x0, y0, x1, y1, advance);
 
         uint8_t winding_count;
         if (fread(&winding_count, sizeof(uint8_t), 1, binFile) != 1) {
@@ -583,8 +600,8 @@ int readFontGlyphData(const uint8_t *mem, int offset, FontGlyphData *glyphData) 
     const uint8_t *ptr = mem + offset;
 
     // 读取基本的坐标和计数
-    memcpy(&glyphData->sx0, ptr, sizeof(short) * 4 + sizeof(uint8_t));
-    ptr += sizeof(short) * 4 + sizeof(uint8_t);
+    memcpy(&glyphData->sx0, ptr, sizeof(short) * 5 + sizeof(uint8_t));
+    ptr += sizeof(short) * 5 + sizeof(uint8_t);
 
     // 分配并读取 winding_lengths
     glyphData->winding_lengths = (uint8_t *)malloc(glyphData->winding_count * sizeof(uint8_t));
@@ -663,13 +680,15 @@ int main() {
 
     const char *text = "滕王高阁临江渚，佩玉鸣鸾罢歌舞。画栋朝飞南浦云，珠帘暮卷西山雨。闲云潭影日悠悠，物换星移几度秋。阁中帝子今何在？槛外长江空自流。";
 
-    int result = generateBinFile("STXINGKA.TTF", "outputxk32_4.bin", text, &fontSet);
+    int result = generateBinFile("STXihei.ttf", "outputxh32_4.bin", text, &fontSet);
+    // STXihei.ttf
+    // STXINGKA.TTF
     if (result == 0) {
-        readBinFile("outputxk32_4.bin");
+        readBinFile("outputxh32_4.bin");
     }
 
-    const char *binFilePath = "outputxk.bin";
-    // uint16_t unicode = 0x4E34;  // 例如：Unicode字符"一"
+    const char *binFilePath = "outputxh32_4.bin";
+    // uint16_t unicode = 0x738B;  // 例如：Unicode字符"王"
 
     // int offset = getGlyphOffsetFromBinFile(unicode, binFilePath);
     // if (offset) {
@@ -684,7 +703,7 @@ int main() {
         return -1;
     }
 
-    uint16_t unicode = 0x6ED5;  // 例如：Unicode字符"一"
+    uint16_t unicode = 0x738B;  // 例如：Unicode字符"王"
     int offset = getGlyphOffsetFromMemory(unicode, memoryBuffer);
     if (offset) {
         printf("Glyph offset for Unicode 0x%X is %d\n", unicode, offset);
@@ -710,7 +729,7 @@ int main() {
                 line_count += glyphData.winding_lengths[i];
             }
             for (int i = 0; i < line_count; ++i) {
-                // printf(" (%d, %d)", glyphData.windings[2 * i], glyphData.windings[2 * i + 1]);
+                printf(" (%d, %d)", glyphData.windings[2 * i], glyphData.windings[2 * i + 1]);
             }
             printf("\n");
 
