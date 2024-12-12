@@ -251,7 +251,7 @@ int generateBinFile(const char *ttfPath, const char *binPath, const char *text, 
     }
 
     int glyphDataOffset = ftell(binFile);
-    float scale = stbtt_ScaleForPixelHeight(&font, fontSet->fontSize * fontSet->renderMode);
+    float scale = stbtt_ScaleForPixelHeight(&font, fontSet->fontSize);
 
     // 存储每个字形数据实际偏移地址的数组
     int *glyphDataStartOffsets = (int *)malloc(unique_len * sizeof(int));
@@ -266,7 +266,7 @@ int generateBinFile(const char *ttfPath, const char *binPath, const char *text, 
         }
 
         int x0, y0, x1, y1;
-        stbtt_GetGlyphBitmapBox(&font, glyphIndex, scale, scale, &x0, &y0, &x1, &y1);
+        stbtt_GetGlyphBitmapBox(&font, glyphIndex, 1.0, 1.0, &x0, &y0, &x1, &y1);
 
         short sx0 = (short)x0;
         short sy0 = (short)y0;
@@ -600,8 +600,9 @@ int readFontGlyphData(const uint8_t *mem, int offset, FontGlyphData *glyphData) 
     const uint8_t *ptr = mem + offset;
 
     // 读取基本的坐标和计数
-    memcpy(&glyphData->sx0, ptr, sizeof(short) * 5 + sizeof(uint8_t));
-    ptr += sizeof(short) * 5 + sizeof(uint8_t);
+    size_t winding_byte_offset = offsetof(FontGlyphData, winding_lengths);
+    memcpy(&glyphData->sx0, ptr, winding_byte_offset);
+    ptr += winding_byte_offset;
 
     // 分配并读取 winding_lengths
     glyphData->winding_lengths = (uint8_t *)malloc(glyphData->winding_count * sizeof(uint8_t));
@@ -663,7 +664,7 @@ int main() {
         .fileFlag = 2,
         .version = { '1', '0', '0', '4' },
         .fontSize = 32,
-        .renderMode = 4,
+        .renderMode = 2,
         .bold = 0,
         .italic = 0,
         .scanMode = 0,
@@ -678,16 +679,16 @@ int main() {
 
     // const char *text = "滕王高阁临江渚";
 
-    const char *text = "滕王高阁临江渚，佩玉鸣鸾罢歌舞。画栋朝飞南浦云，珠帘暮卷西山雨。闲云潭影日悠悠，物换星移几度秋。阁中帝子今何在？槛外长江空自流。";
+    const char *text = "滕王高阁临江渚，佩玉鸣鸾罢歌舞。画栋朝飞南浦云，珠帘暮卷西山雨。闲云潭影日悠悠，物换星移几度秋。阁中帝子今何在？槛外长江空自流。0123456789#=+-ABCDEFG";
 
-    int result = generateBinFile("STXihei.ttf", "outputxh32_4.bin", text, &fontSet);
+    int result = generateBinFile("STXihei.ttf", "outputxh32_2.bin", text, &fontSet);
     // STXihei.ttf
     // STXINGKA.TTF
     if (result == 0) {
-        readBinFile("outputxh32_4.bin");
+        readBinFile("outputxh32_2.bin");
     }
 
-    const char *binFilePath = "outputxh32_4.bin";
+    const char *binFilePath = "outputxh32_2.bin";
     // uint16_t unicode = 0x738B;  // 例如：Unicode字符"王"
 
     // int offset = getGlyphOffsetFromBinFile(unicode, binFilePath);
