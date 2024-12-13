@@ -664,7 +664,7 @@ int main() {
         .fileFlag = 2,
         .version = { '1', '0', '0', '4' },
         .fontSize = 32,
-        .renderMode = 2,
+        .renderMode = 4,
         .bold = 0,
         .italic = 0,
         .scanMode = 0,
@@ -677,18 +677,21 @@ int main() {
         .fontName = NULL
     };
 
-    // const char *text = "滕王高阁临江渚";
+    /*ascii, CP500*/
+    const char *ascii = "!\"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`abcdefghijklmnopqrstuvwxyz{|}~";
+    const char *twgx = "滕王高阁临江渚，佩玉鸣鸾罢歌舞。画栋朝飞南浦云，珠帘暮卷西山雨。闲云潭影日悠悠，物换星移几度秋。阁中帝子今何在？槛外长江空自流。";
+    const char *twgx_ascii = "滕王高阁临江渚，佩玉鸣鸾罢歌舞。画栋朝飞南浦云，珠帘暮卷西山雨。闲云潭影日悠悠，物换星移几度秋。阁中帝子今何在？槛外长江空自流。!\"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`abcdefghijklmnopqrstuvwxyz{|}~";
 
-    const char *text = "滕王高阁临江渚，佩玉鸣鸾罢歌舞。画栋朝飞南浦云，珠帘暮卷西山雨。闲云潭影日悠悠，物换星移几度秋。阁中帝子今何在？槛外长江空自流。0123456789#=+-ABCDEFG";
-
-    int result = generateBinFile("STXihei.ttf", "outputxh32_2.bin", text, &fontSet);
+    const char *binname = "harmony_32_4.bin";
+    int result = generateBinFile("HarmonyOS_Sans_SC_Regular.ttf", binname, ascii, &fontSet);
     // STXihei.ttf
     // STXINGKA.TTF
+    // HarmonyOS_Sans_SC_Regular.ttf
     if (result == 0) {
-        readBinFile("outputxh32_2.bin");
+        readBinFile(binname);
     }
 
-    const char *binFilePath = "outputxh32_2.bin";
+    const char *binFilePath = binname;
     // uint16_t unicode = 0x738B;  // 例如：Unicode字符"王"
 
     // int offset = getGlyphOffsetFromBinFile(unicode, binFilePath);
